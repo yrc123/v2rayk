@@ -11,17 +11,24 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 
 @Composable
-@Preview
 fun App() {
-    var text by remember { mutableStateOf("Hello, World!") }
-
-    MaterialTheme {
-        Button(onClick = {
-            text = "Hello, Desktop!"
-        }) {
-            Text(text)
+    val groups = remember { mutableStateOf(
+        mapOf(
+            "分组A" to listOf("条目1", "条目2"),
+            "分组B" to listOf("条目3", "条目4"),
+        )
+    )}
+    SingleColumnListWithMenu(
+        groupItems = groups.value,
+        onAddGroup = { groupName ->
+            if (groupName.isNotBlank()) {
+                groups.value = groups.value + (groupName to emptyList())
+            }
+        },
+        onGroupSettings = { groupName ->
+            // 这里可以执行具体分组设置逻辑
         }
-    }
+    )
 }
 
 fun main() = application {

@@ -1,0 +1,3 @@
+[submodule "modules/v2ray-core-wrapper"]
+	path = modules/v2ray-core-wrapper
+	url = git@github.com:yrc123/v2ray-core-wrapper.git

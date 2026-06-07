@@ -16,14 +16,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.PointerButton
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 
 /**
  * 单个节点项：左侧名称(主) + 协议(次)，右侧已用流量。
  * 选中态/连接态配色全部取自 MaterialTheme.colors，可叠加。
  */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun NodeRow(
     node: ProxyNode,
@@ -31,6 +37,7 @@ fun NodeRow(
     isConnected: Boolean,
     onClick: () -> Unit,
     onDoubleClick: () -> Unit,
+    onRightClick: () -> Unit = {},
 ) {
     var lastClickTime by remember { mutableStateOf(0L) }
 
@@ -52,6 +59,19 @@ fun NodeRow(
             .clip(RoundedCornerShape(4.dp))
             .background(background)
             .border(1.dp, borderColor, RoundedCornerShape(4.dp))
+            .pointerInput(node) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (event.type == PointerEventType.Press &&
+                            event.button == PointerButton.Secondary
+                        ) {
+                            event.changes.forEach { it.consume() }
+                            onRightClick()
+                        }
+                    }
+                }
+            }
             .clickable {
                 val now = System.currentTimeMillis()
                 if (now - lastClickTime < 400) {

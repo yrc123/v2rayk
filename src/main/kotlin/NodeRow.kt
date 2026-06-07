@@ -1,6 +1,6 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,10 +11,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 
 /**
@@ -29,6 +32,8 @@ fun NodeRow(
     onClick: () -> Unit,
     onDoubleClick: () -> Unit,
 ) {
+    var lastClickTime by remember { mutableStateOf(0L) }
+
     val background = when {
         isConnected -> MaterialTheme.colors.primary.copy(alpha = 0.18f)
         isSelected -> MaterialTheme.colors.primary.copy(alpha = 0.08f)
@@ -47,13 +52,17 @@ fun NodeRow(
             .clip(RoundedCornerShape(4.dp))
             .background(background)
             .border(1.dp, borderColor, RoundedCornerShape(4.dp))
-            .padding(12.dp)
-            .pointerInput(node) {
-                detectTapGestures(
-                    onTap = { onClick() },
-                    onDoubleTap = { onDoubleClick() },
-                )
-            },
+            .clickable {
+                val now = System.currentTimeMillis()
+                if (now - lastClickTime < 400) {
+                    onDoubleClick()
+                    lastClickTime = 0L
+                } else {
+                    onClick()
+                    lastClickTime = now
+                }
+            }
+            .padding(12.dp),
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(node.name, style = MaterialTheme.typography.subtitle1)

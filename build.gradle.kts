@@ -1,7 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
-    kotlin("jvm")
+    kotlin("jvm") version "2.1.0"
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
 }
@@ -21,6 +21,9 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
+    implementation("com.kebab.v2rayk:v2ray-core-wrapper:1.0-SNAPSHOT")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
+    testImplementation(kotlin("test"))
 }
 
 compose.desktop {
@@ -33,4 +36,8 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

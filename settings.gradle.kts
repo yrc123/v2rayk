@@ -13,4 +13,5 @@ pluginManagement {
     }
 }
 
+includeBuild("modules/v2ray-core-wrapper")
 rootProject.name = "v2rayk"

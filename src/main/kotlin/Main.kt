@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import com.kebab.v2rayk.wrapper.config.bound.ProtocolType
+import settings.SettingsViewModel
+import settings.SettingsWindow
 import storage.JsonFileNodeRepository
 import ui.ImportDialog
 import java.nio.file.Paths
@@ -27,36 +29,27 @@ fun App() {
     var groups by remember {
         // 启动时从存储加载已导入的节点，合并默认示例分组
         val persisted = repository.loadAll()
-        val map = persisted.mapValues { (_, nodes) ->
+        val map = persisted.mapValues { (groupName, nodes) ->
             nodes.map { (name, config) ->
                 ProxyNode(
                     name = name,
                     protocol = config.outbounds?.firstOrNull()?.protocol ?: ProtocolType.VMESS,
                     usedTrafficBytes = 0L,
                     configPath = "${System.getProperty("user.home")}/.v2rayk/nodes/" +
-                        "${name.replace(Regex("[<>:\"/\\\\|?*]"), "_")}/" +
+                        "${groupName.replace(Regex("[<>:\"/\\\\|?*]"), "_")}/" +
                         "${name.replace(Regex("[<>:\"/\\\\|?*]"), "_")}.json",
                 )
             }
         }.toMutableMap()
-        // 添加默认示例分组（仅当不存在时）
-        if (!map.containsKey("香港节点")) {
-            map["香港节点"] = listOf(
-                ProxyNode("HK-01 IEPL 专线", ProtocolType.VMESS, 1536L),
-                ProxyNode("HK-02 标准", ProtocolType.SHADOWSOCKS, 1048576L),
-            )
-        }
-        if (!map.containsKey("日本节点")) {
-            map["日本节点"] = listOf(
-                ProxyNode("JP-01 东京", ProtocolType.VMESS, 1073741824L),
-                ProxyNode("JP-02 大阪", ProtocolType.SOCKS, 512L),
-            )
-        }
         mutableStateOf(map)
     }
 
     var selectedNode by remember { mutableStateOf<ProxyNode?>(null) }
     var showImportDialog by remember { mutableStateOf(false) }
+
+    // 设置窗口状态
+    val settingsViewModel = remember { SettingsViewModel() }
+    var showSettings by remember { mutableStateOf(false) }
 
     // 错误提示对话框状态
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -70,7 +63,7 @@ fun App() {
         connectedNode = connectedNode,
         onSelectNode = { node -> selectedNode = node },
         onConnectNode = { node ->
-            connectionManager.switchTo(node).onFailure { e ->
+            connectionManager.switchTo(node, settingsViewModel.settings.value).onFailure { e ->
                 errorMessage = e.message ?: "未知错误"
             }
         },
@@ -87,6 +80,9 @@ fun App() {
         },
         onImportClick = {
             showImportDialog = true
+        },
+        onSettings = {
+            showSettings = true
         },
     )
 
@@ -110,6 +106,29 @@ fun App() {
             },
             onDismiss = { showImportDialog = false },
         )
+    }
+
+    // 设置窗口（独立 Window）
+    if (showSettings) {
+        Window(
+            onCloseRequest = {
+                settingsViewModel.discardDraft()
+                showSettings = false
+            },
+            title = "设置",
+            resizable = true,
+        ) {
+            SettingsWindow(
+                viewModel = settingsViewModel,
+                onSave = {
+                    showSettings = false
+                },
+                onCancel = {
+                    settingsViewModel.discardDraft()
+                    showSettings = false
+                },
+            )
+        }
     }
 
     // 错误提示对话框

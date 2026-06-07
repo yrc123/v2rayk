@@ -23,6 +23,7 @@ fun SingleColumnListWithMenu(
     onConnectNode: (ProxyNode) -> Unit,
     onAddGroup: (String) -> Unit,
     onGroupSettings: (String) -> Unit,
+    onImportClick: () -> Unit,
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
     var showAddGroupDialog by remember { mutableStateOf(false) }
@@ -44,6 +45,9 @@ fun SingleColumnListWithMenu(
                 TopAppBar(
                     title = { Text("连接管理") },
                     actions = {
+                        IconButton(onClick = onImportClick) {
+                            Text("导入")
+                        }
                         Box {
                             IconButton(onClick = { menuExpanded = true }) {
                                 Text("选项")

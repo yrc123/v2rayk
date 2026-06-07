@@ -25,8 +25,8 @@ fun SingleColumnListWithMenu(
     onAddGroup: (String) -> Unit,
     onGroupSettings: (String) -> Unit,
     onImportClick: () -> Unit,
+    onSettings: () -> Unit,
 ) {
-    var menuExpanded by remember { mutableStateOf(false) }
     var showAddGroupDialog by remember { mutableStateOf(false) }
     var newGroupName by remember { mutableStateOf("") }
     var settingGroupName by remember { mutableStateOf<String?>(null) }
@@ -49,26 +49,8 @@ fun SingleColumnListWithMenu(
                         IconButton(onClick = onImportClick) {
                             Text("导入")
                         }
-                        Box {
-                            IconButton(onClick = { menuExpanded = true }) {
-                                Text("选项")
-                            }
-                            DropdownMenu(
-                                expanded = menuExpanded,
-                                onDismissRequest = { menuExpanded = false }
-                            ) {
-                                DropdownMenuItem(onClick = {
-                                    menuExpanded = false
-                                    showAddGroupDialog = true
-                                }) {
-                                    Text("添加分组")
-                                }
-                                DropdownMenuItem(onClick = {
-                                    menuExpanded = false
-                                }) {
-                                    Text("关于")
-                                }
-                            }
+                        IconButton(onClick = onSettings) {
+                            Text("设置")
                         }
                     },
                     backgroundColor = MaterialTheme.colors.primary,
@@ -162,6 +144,19 @@ fun SingleColumnListWithMenu(
                                             }
                                         }
                                     }
+                                }
+                            }
+                        }
+                        // 底部"添加分组"按钮
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.Center,
+                            ) {
+                                TextButton(onClick = { showAddGroupDialog = true }) {
+                                    Text("+ 添加分组")
                                 }
                             }
                         }

@@ -21,6 +21,7 @@ fun SingleColumnListWithMenu(
     connectedNode: ProxyNode?,
     onSelectNode: (ProxyNode) -> Unit,
     onConnectNode: (ProxyNode) -> Unit,
+    onDisconnectNode: (ProxyNode) -> Unit,
     onAddGroup: (String) -> Unit,
     onGroupSettings: (String) -> Unit,
     onImportClick: () -> Unit,
@@ -130,13 +131,37 @@ fun SingleColumnListWithMenu(
                             // 分组内节点（未折叠时显示）
                             if (!isFolded) {
                                 items(nodes) { node ->
-                                    NodeRow(
-                                        node = node,
-                                        isSelected = node == selectedNode,
-                                        isConnected = node == connectedNode,
-                                        onClick = { onSelectNode(node) },
-                                        onDoubleClick = { onConnectNode(node) },
-                                    )
+                                    var showContextMenu by remember { mutableStateOf(false) }
+                                    Box {
+                                        NodeRow(
+                                            node = node,
+                                            isSelected = node == selectedNode,
+                                            isConnected = node == connectedNode,
+                                            onClick = { onSelectNode(node) },
+                                            onDoubleClick = { onConnectNode(node) },
+                                            onRightClick = { showContextMenu = true },
+                                        )
+                                        DropdownMenu(
+                                            expanded = showContextMenu,
+                                            onDismissRequest = { showContextMenu = false }
+                                        ) {
+                                            if (node == connectedNode) {
+                                                DropdownMenuItem(onClick = {
+                                                    showContextMenu = false
+                                                    onDisconnectNode(node)
+                                                }) {
+                                                    Text("断开连接")
+                                                }
+                                            } else {
+                                                DropdownMenuItem(onClick = {
+                                                    showContextMenu = false
+                                                    onConnectNode(node)
+                                                }) {
+                                                    Text("连接")
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

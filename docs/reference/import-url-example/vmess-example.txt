@@ -1,0 +1,36 @@
+导入url：
+vmess://tcp:ecdd5fb7-867f-4218-8eb6-7c5be4aa06e1-0@c7s3.portablesubmarines.com:39120/#JMS-143136@c7s3.portablesubmarines.com:39120
+导入的json：
+{
+    "outbounds": [
+        {
+            "mux": {
+            },
+            "protocol": "vmess",
+            "sendThrough": "0.0.0.0",
+            "settings": {
+                "vnext": [
+                    {
+                        "address": "c7s3.portablesubmarines.com",
+                        "port": 39120,
+                        "users": [
+                            {
+                                "id": "ecdd5fb7-867f-4218-8eb6-7c5be4aa06e1",
+                                "security": "aes-128-gcm"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "streamSettings": {
+                "tlsSettings": {
+                    "disableSystemRoot": false
+                },
+                "xtlsSettings": {
+                    "disableSystemRoot": false
+                }
+            },
+            "tag": "PROXY"
+        }
+    ]
+}

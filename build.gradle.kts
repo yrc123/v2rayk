@@ -21,7 +21,8 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
-    implementation(project(":modules:v2ray-core-wrapper"))
+    implementation("com.kebab.v2rayk:v2ray-core-wrapper:1.0-SNAPSHOT")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
     testImplementation(kotlin("test"))
 }
 

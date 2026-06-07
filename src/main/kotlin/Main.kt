@@ -1,7 +1,3 @@
-import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -9,26 +5,40 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import com.kebab.v2rayk.wrapper.V2RayCliServer
-import kotlin.io.path.Path
+import com.kebab.v2rayk.wrapper.config.bound.ProtocolType
 
 @Composable
 fun App() {
-    val groups = remember { mutableStateOf(
-        mapOf(
-            "分组A" to listOf("条目1", "条目2"),
-            "分组B" to listOf("条目3", "条目4"),
+    var groups by remember {
+        mutableStateOf(
+            mapOf(
+                "香港节点" to listOf(
+                    ProxyNode("HK-01 IEPL 专线", ProtocolType.VMESS, 1536L),
+                    ProxyNode("HK-02 标准", ProtocolType.SHADOWSOCKS, 1048576L),
+                ),
+                "日本节点" to listOf(
+                    ProxyNode("JP-01 东京", ProtocolType.VMESS, 1073741824L),
+                    ProxyNode("JP-02 大阪", ProtocolType.SOCKS, 512L),
+                ),
+            )
         )
-    )}
+    }
+    var selectedNode by remember { mutableStateOf<ProxyNode?>(null) }
+    var connectedNode by remember { mutableStateOf<ProxyNode?>(null) }
+
     SingleColumnListWithMenu(
-        groupItems = groups.value,
+        groupItems = groups,
+        selectedNode = selectedNode,
+        connectedNode = connectedNode,
+        onSelectNode = { node -> selectedNode = node },
+        onConnectNode = { node -> connectedNode = node },
         onAddGroup = { groupName ->
             if (groupName.isNotBlank()) {
-                groups.value = groups.value + (groupName to emptyList())
+                groups = groups + (groupName to emptyList())
             }
         },
         onGroupSettings = { groupName ->
-            // 这里可以执行具体分组设置逻辑
+            // 这里可以执行具体分组设置逻辑（后续迭代接入 wrapper）
         }
     )
 }

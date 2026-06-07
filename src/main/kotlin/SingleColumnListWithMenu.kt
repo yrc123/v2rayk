@@ -1,13 +1,10 @@
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.window.Dialog
@@ -19,12 +16,15 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 
 @Composable
 fun SingleColumnListWithMenu(
-    groupItems: Map<String, List<String>>,
+    groupItems: Map<String, List<ProxyNode>>,
+    selectedNode: ProxyNode?,
+    connectedNode: ProxyNode?,
+    onSelectNode: (ProxyNode) -> Unit,
+    onConnectNode: (ProxyNode) -> Unit,
     onAddGroup: (String) -> Unit,
-    onGroupSettings: (String) -> Unit
+    onGroupSettings: (String) -> Unit,
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
-    var doubleClickedItem by remember { mutableStateOf<String?>(null) }
     var showAddGroupDialog by remember { mutableStateOf(false) }
     var newGroupName by remember { mutableStateOf("") }
     var settingGroupName by remember { mutableStateOf<String?>(null) }
@@ -42,7 +42,7 @@ fun SingleColumnListWithMenu(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("我的菜单栏") },
+                    title = { Text("连接管理") },
                     actions = {
                         Box {
                             IconButton(onClick = { menuExpanded = true }) {
@@ -66,8 +66,8 @@ fun SingleColumnListWithMenu(
                             }
                         }
                     },
-                    backgroundColor = Color(0xFF1976D2),
-                    contentColor = Color.White
+                    backgroundColor = MaterialTheme.colors.primary,
+                    contentColor = MaterialTheme.colors.onPrimary
                 )
             }
         ) { padding ->
@@ -76,7 +76,7 @@ fun SingleColumnListWithMenu(
                     .fillMaxSize()
                     .padding(padding)
                     .padding(16.dp)
-                    .border(2.dp, Color.Gray)
+                    .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
             ) {
                 Row {
                     val state = rememberLazyListState()
@@ -89,7 +89,7 @@ fun SingleColumnListWithMenu(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         horizontalAlignment = Alignment.Start
                     ) {
-                        groupItems.forEach { (groupName, items) ->
+                        groupItems.forEach { (groupName, nodes) ->
                             val isFolded = groupFoldStates[groupName] ?: false
                             // 分组标题行
                             item {
@@ -97,7 +97,7 @@ fun SingleColumnListWithMenu(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(Color(0xFFE3F2FD))
+                                        .background(MaterialTheme.colors.primary.copy(alpha = 0.1f))
                                         .padding(vertical = 8.dp, horizontal = 8.dp)
                                 ) {
                                     // 折叠/展开按钮
@@ -123,25 +123,16 @@ fun SingleColumnListWithMenu(
                                     }
                                 }
                             }
-                            // 分组内条目（未折叠时显示）
+                            // 分组内节点（未折叠时显示）
                             if (!isFolded) {
-                                items(items) { item ->
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
-                                            .background(Color(0xFFF7F7F7))
-                                            .padding(12.dp)
-                                            .pointerInput(item) {
-                                                detectTapGestures(
-                                                    onDoubleTap = {
-                                                        doubleClickedItem = item
-                                                    }
-                                                )
-                                            }
-                                    ) {
-                                        Text(item)
-                                    }
+                                items(nodes) { node ->
+                                    NodeRow(
+                                        node = node,
+                                        isSelected = node == selectedNode,
+                                        isConnected = node == connectedNode,
+                                        onClick = { onSelectNode(node) },
+                                        onDoubleClick = { onConnectNode(node) },
+                                    )
                                 }
                             }
                         }
@@ -154,29 +145,12 @@ fun SingleColumnListWithMenu(
                     )
                 }
 
-                doubleClickedItem?.let { clicked ->
-                    Dialog(onDismissRequest = { doubleClickedItem = null }) {
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = Color.White,
-                            elevation = 8.dp,
-                            modifier = Modifier.padding(32.dp)
-                        ) {
-                            Box(
-                                Modifier.padding(24.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("双击了：$clicked")
-                            }
-                        }
-                    }
-                }
                 // 添加分组对话框
                 if (showAddGroupDialog) {
                     Dialog(onDismissRequest = { showAddGroupDialog = false }) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color.White,
+                            color = MaterialTheme.colors.surface,
                             elevation = 8.dp
                         ) {
                             Column(Modifier.padding(24.dp)) {
@@ -210,7 +184,7 @@ fun SingleColumnListWithMenu(
                     Dialog(onDismissRequest = { settingGroupName = null }) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color.White,
+                            color = MaterialTheme.colors.surface,
                             elevation = 8.dp
                         ) {
                             Box(Modifier.padding(24.dp)) {

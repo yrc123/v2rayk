@@ -158,8 +158,28 @@ fun ImportDialog(
                             lines.forEachIndexed { index, line ->
                                 try {
                                     val strategy = ImportStrategyFactory.create(line)
-                                    val config = strategy.parse(line)
-                                    val nodeName = config.outbounds?.firstOrNull()?.tag ?: "imported-${index + 1}"
+                                    val parsedConfig = strategy.parse(line)
+                                    var nodeName = parsedConfig.outbounds?.firstOrNull()?.tag
+                                        ?: "imported-${index + 1}"
+
+                                    // 处理重名：当批量导入多个节点具有相同名称时，
+                                    // 通过添加后缀编号避免文件名冲突
+                                    if (nodeName in importedNodes) {
+                                        var counter = 2
+                                        val baseName = nodeName
+                                        while ("${baseName}-${counter}" in importedNodes) counter++
+                                        nodeName = "${baseName}-${counter}"
+                                    }
+
+                                    // 若 nodeName 与原始 tag 不同，需更新 Outbound 标签
+                                    val config = if (nodeName != parsedConfig.outbounds?.firstOrNull()?.tag) {
+                                        parsedConfig.copy(
+                                            outbounds = parsedConfig.outbounds?.map { it.copy(tag = nodeName) }
+                                        )
+                                    } else {
+                                        parsedConfig
+                                    }
+
                                     repository.save(targetGroup, nodeName, config)
                                     importedNodes.add(nodeName)
                                 } catch (e: ImportException) {

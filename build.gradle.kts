@@ -22,6 +22,7 @@ dependencies {
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
     implementation(project(":modules:v2ray-core-wrapper"))
+    testImplementation(kotlin("test"))
 }
 
 compose.desktop {
@@ -34,4 +35,8 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
